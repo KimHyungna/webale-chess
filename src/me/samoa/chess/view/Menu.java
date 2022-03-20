@@ -34,12 +34,14 @@ public class Menu extends JMenuBar {
     Action endAction = new AbstractAction("End") {
       @Override
       public void actionPerformed(ActionEvent evt) {
-        if(GameManager.getInstance().getCurrentPlayer().getPlayerName() == "bluePlayer") GameGUI.turnButtons();
+        if(GameManager.getInstance().getCurrentPlayer().getTeam() == Team.BLUE) GameGUI.turnButtons();  
         API api = API.getInstance();
         api.setState(new ClearState(api));
         startAction.setEnabled(true);
-        GameGUI.disableButtons();
+        GameStatusInfo previousStatus = new GameStatusInfo();
         GameGUI.setLabelMsg("Press Start to begin");
+        if(previousStatus.getCurrentTurn() == Team.BLUE) GameGUI.turnButtons();
+        GameGUI.disableButtons();
         setEnabled(false);
       }
     };
@@ -47,6 +49,7 @@ public class Menu extends JMenuBar {
     startAction = new AbstractAction("Start") {
       @Override
       public void actionPerformed(ActionEvent evt) {
+        GameStatusInfo previousStatus = new GameStatusInfo();
         try {
           GameGUI.enableButtons();
           List<PositionInfo> postionInfos = API.getInstance().getState().onReset();
@@ -64,9 +67,12 @@ public class Menu extends JMenuBar {
           GameGUI.setLabelMsg(String.format("Game Status: %s, Current Turn: %s, Winner: %s", initState.getStatus(),
               initState.getCurrentTurn(), initState.getWinner()));
           System.out.println();
+          if(initState.getCurrentTurn() != previousStatus.getCurrentTurn())
+            GameGUI.turnButtons();
         } catch (Exception e) {
           e.printStackTrace();
         }
+        
         setEnabled(false);
         endAction.setEnabled(true);
         GameGUI.chessWImage();
@@ -89,8 +95,10 @@ public class Menu extends JMenuBar {
     Action loadAction = new AbstractAction("Load") {
       @Override
       public void actionPerformed(ActionEvent evt) {
+        GameGUI.disableButtons();
         GameManager gameManager = GameManager.getInstance();
         String inputValue = "";
+        GameStatusInfo previousStatus = new GameStatusInfo();
         boolean fileExist = false;
         while (inputValue == null || inputValue.equals("") || !fileExist) {
           inputValue = JOptionPane.showInputDialog(null, "Please input the name of your save file:", "Load Game", JOptionPane.QUESTION_MESSAGE);
@@ -112,13 +120,18 @@ public class Menu extends JMenuBar {
           GameGUI.setLabelMsg(String.format("Game Status: %s, Current Turn: %s, Winner: %s",
           loadState.getStatus(), loadState.getCurrentTurn(), loadState.getWinner()));
           System.out.println();
-          if(loadState.getCurrentTurn() == Team.BLUE)
+          
+          if(loadState.getCurrentTurn() != previousStatus.getCurrentTurn()){
             GameGUI.turnButtons();
+          }
         } catch (Exception e) {
           e.printStackTrace();
         }
         startAction.setEnabled(false);
+        endAction.setEnabled(true);
+        GameGUI.enableButtons();
         GameGUI.chessWImage();
+        GameGUI.enableButtons();
         JOptionPane.showMessageDialog(null, "Game loaded successfully!", "Loaded game", JOptionPane.INFORMATION_MESSAGE);
       }
     };
@@ -127,6 +140,7 @@ public class Menu extends JMenuBar {
     save = new JMenuItem(saveAction);
     load = new JMenuItem(loadAction);
     end = new JMenuItem(endAction);
+    endAction.setEnabled(false);
 
     super.add(start);
     super.add(save);

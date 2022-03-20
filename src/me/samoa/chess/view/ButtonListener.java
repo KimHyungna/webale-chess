@@ -26,7 +26,7 @@ public class ButtonListener implements ActionListener {
     System.out.println(clicked.getName());
     String selPiece = GameManager.getInstance().getBoard().getSlotOccupied(selectedRow, selectedCol) ? GameManager.getInstance().getBoard().getSlot(selectedRow, selectedCol).getOccupiedPiece().getType().toString() + " " : "";
     GameGUI.setLabelMsg("Selected " + selPiece + "on " + clicked.getName());
-    if(movementInfos == null){
+    if(movementInfos == null) {
       movementInfos = API.getInstance().getState().onSelect(selectedRow, selectedCol);
       if (movementInfos == null) {
         GameGUI.setLabelMsg("Invalid movement");
@@ -52,17 +52,19 @@ public class ButtonListener implements ActionListener {
         System.out.println(String.format("[%d %d] : %s %s %s",
         positionInfo.getRow(), positionInfo.getCol(), positionInfo.isNorth() ? "North" : "South", positionInfo.getTeam(), positionInfo.getType()));
       }
-        
-      GameGUI.turnButtons();
       System.out.println();
       GameStatusInfo statusInfo = API.getInstance().getState().onCheck();
       GameGUI.setLabelMsg(String.format("Game Status: %s, Current Turn: %s, Winner: %s",
       statusInfo.getStatus(), statusInfo.getCurrentTurn(), statusInfo.getWinner()));
       if(statusInfo.getWinner() != null){
+        GameGUI.chessWImage();
         JOptionPane.showMessageDialog(null, statusInfo.getWinner() + " has won!",  
         "information", JOptionPane.INFORMATION_MESSAGE);
         Menu.startAction.setEnabled(true);
         GameGUI.disableButtons();
+      }
+      else{
+        GameGUI.turnButtons();
       }
       System.out.println();
       movementInfos = null;
